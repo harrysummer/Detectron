@@ -37,3 +37,7 @@ if 'DATA_DEVKIT_DIR' in os.environ:
 else:
     DATA_DEVKIT_DIR = ''
 
+if 'IM_PREFIX' in os.environ:
+    IM_PREFIX = os.environ['IM_PREFIX']
+else:
+    IM_PREFIX = 'image_prefix'
