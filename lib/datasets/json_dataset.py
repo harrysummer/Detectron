@@ -40,10 +40,7 @@ from pycocotools import mask as COCOmask
 from pycocotools.coco import COCO
 
 from core.config import cfg
-from datasets.dataset_catalog import ANN_FN
-from datasets.dataset_catalog import DATASETS
-from datasets.dataset_catalog import IM_DIR
-from datasets.dataset_catalog import IM_PREFIX
+from datasets.dataset_catalog import DATA_IM_DIR, DATA_ANN_FN, DATA_RAW_DIR, DATA_DEVKIT_DIR, IM_PREFIX
 from utils.timer import Timer
 import utils.boxes as box_utils
 
@@ -54,19 +51,15 @@ class JsonDataset(object):
     """A class representing a COCO json dataset."""
 
     def __init__(self, name):
-        assert name in DATASETS.keys(), \
-            'Unknown dataset name: {}'.format(name)
-        assert os.path.exists(DATASETS[name][IM_DIR]), \
-            'Image directory \'{}\' not found'.format(DATASETS[name][IM_DIR])
-        assert os.path.exists(DATASETS[name][ANN_FN]), \
-            'Annotation file \'{}\' not found'.format(DATASETS[name][ANN_FN])
+        assert os.path.exists(DATA_IM_DIR), \
+            'Image directory \'{}\' not found'.format(DATA_IM_DIR)
+        assert os.path.exists(DATA_ANN_FN), \
+            'Annotation file \'{}\' not found'.format(DATA_ANN_FN)
         logger.debug('Creating: {}'.format(name))
         self.name = name
-        self.image_directory = DATASETS[name][IM_DIR]
-        self.image_prefix = (
-            '' if IM_PREFIX not in DATASETS[name] else DATASETS[name][IM_PREFIX]
-        )
-        self.COCO = COCO(DATASETS[name][ANN_FN])
+        self.image_directory = DATA_IM_DIR
+        self.image_prefix = IM_PREFIX
+        self.COCO = COCO(DATA_ANN_FN)
         self.debug_timer = Timer()
         # Set up dataset classes
         category_ids = self.COCO.getCatIds()
