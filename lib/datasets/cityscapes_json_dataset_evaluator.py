@@ -28,8 +28,7 @@ import uuid
 import pycocotools.mask as mask_util
 
 from core.config import cfg
-from datasets.dataset_catalog import DATASETS
-from datasets.dataset_catalog import RAW_DIR
+from datasets.dataset_catalog import DATA_RAW_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ def evaluate_masks(
     if not os.path.exists(results_dir):
         os.mkdir(results_dir)
 
-    os.environ['CITYSCAPES_DATASET'] = DATASETS[json_dataset.name][RAW_DIR]
+    os.environ['CITYSCAPES_DATASET'] = DATA_RAW_DIR
     os.environ['CITYSCAPES_RESULTS'] = output_dir
 
     # Load the Cityscapes eval script *after* setting the required env vars,
