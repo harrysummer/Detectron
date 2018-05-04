@@ -40,4 +40,4 @@ else:
 if 'IM_PREFIX' in os.environ:
     IM_PREFIX = os.environ['IM_PREFIX']
 else:
-    IM_PREFIX = 'image_prefix'
+    IM_PREFIX = ''
