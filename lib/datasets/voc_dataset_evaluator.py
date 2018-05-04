@@ -27,7 +27,6 @@ import shutil
 import uuid
 
 from core.config import cfg
-DEVKIT_DIR
 from datasets.voc_eval import voc_eval
 from utils.io import save_object
 
