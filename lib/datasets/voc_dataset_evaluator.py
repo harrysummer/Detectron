@@ -27,8 +27,7 @@ import shutil
 import uuid
 
 from core.config import cfg
-from datasets.dataset_catalog import DATASETS
-from datasets.dataset_catalog import DEVKIT_DIR
+DEVKIT_DIR
 from datasets.voc_eval import voc_eval
 from utils.io import save_object
 
@@ -164,7 +163,7 @@ def _do_matlab_eval(json_dataset, salt, output_dir='output'):
 def voc_info(json_dataset):
     year = json_dataset.name[4:8]
     image_set = json_dataset.name[9:]
-    devkit_path = DATASETS[json_dataset.name][DEVKIT_DIR]
+    devkit_path = DATA_DEVKIT_DIR
     assert os.path.exists(devkit_path), \
         'Devkit directory {} not found'.format(devkit_path)
     anno_path = os.path.join(
