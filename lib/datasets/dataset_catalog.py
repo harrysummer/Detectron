@@ -25,7 +25,7 @@ import os
 
 # Path to data dir
 DATA_IM_DIR = os.environ['DATA_IM_DIR']
-DATA_ANN_FN = os.environ['ANN_FN']
+DATA_ANN_FN = os.environ['DATA_ANN_FN']
 
 if 'DATA_RAW_DIR' in os.environ:
     DATA_RAW_DIR = os.environ['DATA_RAW_DIR']
