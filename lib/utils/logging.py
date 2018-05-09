@@ -20,6 +20,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from core.config import cfg
 from collections import deque
 from email.mime.text import MIMEText
 import json
@@ -35,6 +36,9 @@ json.encoder.FLOAT_REPR = lambda o: format(o, '.6f')
 def log_json_stats(stats, sort_keys=True):
     print('json_stats: {:s}'.format(json.dumps(stats, sort_keys=sort_keys)))
 
+def log_for_philly(stats):
+    print('PROGRESS: {}%'.format(100.0 * stats['iter'] / cfg.SOLVER.MAX_ITER))
+    print('EVALERR: {}%'.format(stats['loss']))
 
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a
