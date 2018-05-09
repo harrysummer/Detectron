@@ -27,7 +27,7 @@ import numpy as np
 
 from caffe2.python import utils as c2_py_utils
 from core.config import cfg
-from utils.logging import log_json_stats
+from utils.logging import log_json_stats, log_for_philly
 from utils.logging import SmoothedValue
 from utils.timer import Timer
 import utils.net as nu
@@ -87,6 +87,7 @@ class TrainingStats(object):
                 cur_iter == cfg.SOLVER.MAX_ITER - 1):
             stats = self.GetStats(cur_iter, lr)
             log_json_stats(stats)
+            log_for_philly(stats)
 
     def GetStats(self, cur_iter, lr):
         eta_seconds = self.iter_timer.average_time * (
