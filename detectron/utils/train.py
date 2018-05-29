@@ -100,7 +100,7 @@ def create_model():
     logger = logging.getLogger(__name__)
     start_iter = 0
     checkpoints = {}
-    output_dir = get_output_dir(cfg.TRAIN.DATASETS, training=True)
+    output_dir = get_output_dir(cfg.TRAIN.DATASET_INFO, training=True)
     weights_file = cfg.TRAIN.WEIGHTS
     if cfg.TRAIN.AUTO_RESUME:
         # Check for the final model (indicates training already finished)
@@ -176,9 +176,9 @@ def setup_model_for_training(model, weights_file, output_dir):
 def add_model_training_inputs(model):
     """Load the training dataset and attach the training inputs to the model."""
     logger = logging.getLogger(__name__)
-    logger.info('Loading dataset: {}'.format(cfg.TRAIN.DATASETS))
+    logger.info('Loading dataset: {}'.format(cfg.TRAIN.DATASET_INFO.NAME))
     roidb = combined_roidb_for_training(
-        cfg.TRAIN.DATASETS, cfg.TRAIN.PROPOSAL_FILES
+        cfg.TRAIN.DATASET_INFO, cfg.TRAIN.PROPOSAL_FILES
     )
     logger.info('{:d} roidb entries'.format(len(roidb)))
     model_builder.add_training_inputs(model, roidb=roidb)

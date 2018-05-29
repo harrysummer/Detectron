@@ -41,7 +41,6 @@ from pycocotools.coco import COCO
 
 from detectron.core.config import cfg
 from detectron.utils.timer import Timer
-from detectron.datasets.dataset_catalog import DATA_IM_DIR, DATA_ANN_FN, DATA_RAW_DIR, DATA_DEVKIT_DIR, IM_PREFIX
 import detectron.utils.boxes as box_utils
 
 logger = logging.getLogger(__name__)
@@ -50,16 +49,20 @@ logger = logging.getLogger(__name__)
 class JsonDataset(object):
     """A class representing a COCO json dataset."""
 
-    def __init__(self, name):
-        assert os.path.exists(DATA_IM_DIR), \
-            'Im dir \'{}\' not found'.format(DATA_IM_DIR)
-        assert os.path.exists(DATA_ANN_FN), \
-            'Ann fn \'{}\' not found'.format(DATA_ANN_FN)
-        logger.debug('Creating: {}'.format(name))
-        self.name = name
-        self.image_directory = DATA_IM_DIR
-        self.image_prefix = IM_PREFIX
-        self.COCO = COCO(DATA_ANN_FN)
+    def __init__(self, dataset_info):
+        assert os.path.exists(dataset_info.DATA_IM_DIR), \
+            'Im dir \'{}\' not found'.format(dataset_info.DATA_IM_DIR)
+        assert os.path.exists(dataset_info.DATA_ANN_FN), \
+            'Ann fn \'{}\' not found'.format(dataset_info.DATA_ANN_FN)
+        logger.debug('Creating: {}'.format(dataset_info.NAME))
+        self.name = dataset_info.NAME
+        self.image_directory = dataset_info.DATA_IM_DIR
+        self.image_prefix = dataset_info.IM_PREFIX
+        self.COCO = COCO(dataset_info.DATA_ANN_FN)
+        if dataset_info.DATA_RAW_DIR:
+            self.data_raw_dir = dataset_info.DATA_RAW_DIR
+        if dataset_info.DATA_DEVKIT_DIR:
+            self.data_devkit_dir = dataset_info.DATA_DEVKIT_DIR
         self.debug_timer = Timer()
         # Set up dataset classes
         category_ids = self.COCO.getCatIds()

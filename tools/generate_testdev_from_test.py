@@ -31,12 +31,15 @@ import json
 import os
 import sys
 
-from detectron.datasets.dataset_catalog import get_ann_fn
 from detectron.utils.timer import Timer
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--ann', dest='ann_file',
+        help='annotation file',
+        default='', type=str)
     parser.add_argument(
         '--json', dest='json_file',
         help='detections json file',
@@ -52,13 +55,13 @@ def parse_args():
     return args
 
 
-def convert(json_file, output_dir):
+def convert(ann, json_file, output_dir):
     print('Reading: {}'.format(json_file))
     with open(json_file, 'r') as fid:
         dt = json.load(fid)
     print('done!')
 
-    test_image_info = get_ann_fn('coco_2017_test')
+    test_image_info = ann_file
     with open(test_image_info, 'r') as fid:
         info_test = json.load(fid)
     image_test = info_test['images']
@@ -93,4 +96,4 @@ def convert(json_file, output_dir):
 
 if __name__ == '__main__':
     opts = parse_args()
-    convert(opts.json_file, opts.output_dir)
+    convert(opts.ann_file, opts.json_file, opts.output_dir)

@@ -33,13 +33,13 @@ import detectron.utils.segms as segm_utils
 logger = logging.getLogger(__name__)
 
 
-def combined_roidb_for_training(dataset_names, proposal_files):
+def combined_roidb_for_training(dataset_info, proposal_files):
     """Load and concatenate roidbs for one or more datasets, along with optional
     object proposals. The roidb entries are then prepared for use in training,
     which involves caching certain types of metadata for each roidb entry.
     """
-    def get_roidb(dataset_name, proposal_file):
-        ds = JsonDataset(dataset_name)
+    def get_roidb(dataset_info, proposal_file):
+        ds = JsonDataset(dataset_info)
         roidb = ds.get_roidb(
             gt=True,
             proposal_file=proposal_file,
@@ -51,14 +51,13 @@ def combined_roidb_for_training(dataset_names, proposal_files):
         logger.info('Loaded dataset: {:s}'.format(ds.name))
         return roidb
 
-    if isinstance(dataset_names, basestring):
-        dataset_names = (dataset_names, )
+    dataset_infos = (dataset_info, )
     if isinstance(proposal_files, basestring):
         proposal_files = (proposal_files, )
     if len(proposal_files) == 0:
-        proposal_files = (None, ) * len(dataset_names)
-    assert len(dataset_names) == len(proposal_files)
-    roidbs = [get_roidb(*args) for args in zip(dataset_names, proposal_files)]
+        proposal_files = (None, ) * len(dataset_infos)
+    assert len(dataset_infos) == len(proposal_files)
+    roidbs = [get_roidb(*args) for args in zip(dataset_infos, proposal_files)]
     roidb = roidbs[0]
     for r in roidbs[1:]:
         roidb.extend(r)

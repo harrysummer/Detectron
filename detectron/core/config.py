@@ -74,10 +74,20 @@ __C.TRAIN = AttrDict()
 # Initialize network with weights from this .pkl file
 __C.TRAIN.WEIGHTS = b''
 
-# Datasets to train on
-# Available dataset list: detectron.datasets.dataset_catalog.datasets()
-# If multiple datasets are listed, the model is trained on their union
-__C.TRAIN.DATASETS = ()
+## Datasets to train on
+## Available dataset list: detectron.datasets.dataset_catalog.datasets()
+## If multiple datasets are listed, the model is trained on their union
+#__C.TRAIN.DATASETS = ()
+
+# The paths for training dataset
+__C.TRAIN.DATASET_INFO = AttrDict()
+__C.TRAIN.DATASET_INFO.NAME = b'train'
+__C.TRAIN.DATASET_INFO.DATA_IM_DIR = b''
+__C.TRAIN.DATASET_INFO.DATA_ANN_FN = b''
+__C.TRAIN.DATASET_INFO.DATA_RAW_DIR = b''
+__C.TRAIN.DATASET_INFO.DATA_DEVKIT_DIR = b''
+__C.TRAIN.DATASET_INFO.IM_PREFIX = b''
+
 
 # Scales to use during training
 # Each scale is the pixel size of an image's shortest side
@@ -215,10 +225,19 @@ __C.TEST = AttrDict()
 # Initialize network with weights from this .pkl file
 __C.TEST.WEIGHTS = b''
 
-# Datasets to test on
-# Available dataset list: detectron.datasets.dataset_catalog.datasets()
-# If multiple datasets are listed, testing is performed on each one sequentially
-__C.TEST.DATASETS = ()
+## Datasets to test on
+## Available dataset list: detectron.datasets.dataset_catalog.datasets()
+## If multiple datasets are listed, testing is performed on each one sequentially
+#__C.TEST.DATASETS = ()
+
+# The paths for testing dataset
+__C.TEST.DATASET = AttrDict()
+__C.TEST.NAME = b'test'
+__C.TEST.DATA_IM_DIR = b''
+__C.TEST.DATA_ANN_FN = b''
+__C.TEST.DATA_RAW_DIR = b''
+__C.TEST.DATA_DEVKIT_DIR = b''
+__C.TEST.IM_PREFIX = b''
 
 # Scale to use during testing
 __C.TEST.SCALE = 600
@@ -1015,11 +1034,12 @@ _RENAMED_KEYS = {
     'MODEL.ROI_HEAD': 'FAST_RCNN.ROI_BOX_HEAD',
     'MRCNN.MASK_HEAD_NAME': 'MRCNN.ROI_MASK_HEAD',
     'TRAIN.DATASET': (
-        'TRAIN.DATASETS',
-        "Also convert to a tuple, e.g., " +
-        "'coco_2014_train' -> ('coco_2014_train',) or " +
-        "'coco_2014_train:coco_2014_valminusminival' -> " +
-        "('coco_2014_train', 'coco_2014_valminusminival')"
+        'TRAIN.DATASET_INFO',
+        "This Detectron version use paths defined in yaml config instead of dataset names"
+    ),
+    'TRAIN.DATASETS': (
+        'TRAIN.DATASET_INFO',
+        "This Detectron version use paths defined in yaml config instead of dataset names"
     ),
     'TRAIN.PROPOSAL_FILE': (
         'TRAIN.PROPOSAL_FILES',
@@ -1034,9 +1054,12 @@ _RENAMED_KEYS = {
         "to a integer, e.g. 600."
     ),
     'TEST.DATASET': (
-        'TEST.DATASETS',
-        "Also convert from a string, e.g 'coco_2014_minival', " +
-        "to a tuple, e.g. ('coco_2014_minival', )."
+        'TEST.DATASET_INFO',
+        "This Detectron version use paths defined in yaml config instead of dataset names"
+    ),
+    'TEST.DATASETS': (
+        'TEST.DATASET_INFO',
+        "This Detectron version use paths defined in yaml config instead of dataset names"
     ),
     'TEST.PROPOSAL_FILE': (
         'TEST.PROPOSAL_FILES',
@@ -1089,12 +1112,11 @@ def cache_cfg_urls():
     )
 
 
-def get_output_dir(datasets, training=True):
+def get_output_dir(dataset_info, training=True):
     """Get the output directory determined by the current global config."""
     assert isinstance(datasets, (tuple, list, basestring)), \
         'datasets argument must be of type tuple, list or string'
-    is_string = isinstance(datasets, basestring)
-    dataset_name = datasets if is_string else ':'.join(datasets)
+    dataset_name = dataset_info.NAME
     tag = 'train' if training else 'test'
     # <output-dir>/<train|test>/<dataset-name>/<model-type>/
     outdir = osp.join(__C.OUTPUT_DIR, tag, dataset_name, __C.MODEL.TYPE)

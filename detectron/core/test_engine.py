@@ -64,10 +64,7 @@ def get_eval_functions():
 
 
 def get_inference_dataset(index, is_parent=True):
-    assert is_parent or len(cfg.TEST.DATASETS) == 1, \
-        'The child inference process can only work on a single dataset'
-
-    dataset_name = cfg.TEST.DATASETS[index]
+    dataset_info = cfg.TEST.DATASET
 
     if cfg.TEST.PRECOMPUTED_PROPOSALS:
         assert is_parent or len(cfg.TEST.PROPOSAL_FILES) == 1, \
@@ -79,7 +76,7 @@ def get_inference_dataset(index, is_parent=True):
     else:
         proposal_file = None
 
-    return dataset_name, proposal_file
+    return dataset_info, proposal_file
 
 
 def run_inference(
@@ -98,11 +95,11 @@ def run_inference(
             # launch subprocesses that each run inference on a range of the dataset
             all_results = {}
             for i in range(len(cfg.TEST.DATASETS)):
-                dataset_name, proposal_file = get_inference_dataset(i)
-                output_dir = get_output_dir(dataset_name, training=False)
+                dataset_info, proposal_file = get_inference_dataset(i)
+                output_dir = get_output_dir(dataset_info, training=False)
                 results = parent_func(
                     weights_file,
-                    dataset_name,
+                    dataset_info,
                     proposal_file,
                     output_dir,
                     multi_gpu=multi_gpu_testing
@@ -114,11 +111,11 @@ def run_inference(
             # Subprocess child case:
             # In this case test_net was called via subprocess.Popen to execute on a
             # range of inputs on a single dataset
-            dataset_name, proposal_file = get_inference_dataset(0, is_parent=False)
-            output_dir = get_output_dir(dataset_name, training=False)
+            dataset_info, proposal_file = get_inference_dataset(0, is_parent=False)
+            output_dir = get_output_dir(dataset_info, training=False)
             return child_func(
                 weights_file,
-                dataset_name,
+                dataset_info,
                 proposal_file,
                 output_dir,
                 ind_range=ind_range,
@@ -139,24 +136,24 @@ def run_inference(
 
 def test_net_on_dataset(
     weights_file,
-    dataset_name,
+    dataset_info,
     proposal_file,
     output_dir,
     multi_gpu=False,
     gpu_id=0
 ):
     """Run inference on a dataset."""
-    dataset = JsonDataset(dataset_name)
+    dataset = JsonDataset(dataset_info)
     test_timer = Timer()
     test_timer.tic()
     if multi_gpu:
         num_images = len(dataset.get_roidb())
         all_boxes, all_segms, all_keyps = multi_gpu_test_net_on_dataset(
-            weights_file, dataset_name, proposal_file, num_images, output_dir
+            weights_file, dataset_info, proposal_file, num_images, output_dir
         )
     else:
         all_boxes, all_segms, all_keyps = test_net(
-            weights_file, dataset_name, proposal_file, output_dir, gpu_id=gpu_id
+            weights_file, dataset_info, proposal_file, output_dir, gpu_id=gpu_id
         )
     test_timer.toc()
     logger.info('Total inference time: {:.3f}s'.format(test_timer.average_time))
@@ -167,7 +164,7 @@ def test_net_on_dataset(
 
 
 def multi_gpu_test_net_on_dataset(
-    weights_file, dataset_name, proposal_file, num_images, output_dir
+    weights_file, dataset_info, proposal_file, num_images, output_dir
 ):
     """Multi-gpu inference on a dataset."""
     binary_dir = envu.get_runtime_dir()
@@ -176,7 +173,12 @@ def multi_gpu_test_net_on_dataset(
     assert os.path.exists(binary), 'Binary \'{}\' not found'.format(binary)
 
     # Pass the target dataset and proposal file (if any) via the command line
-    opts = ['TEST.DATASETS', '("{}",)'.format(dataset_name)]
+    opts = ['TEST.DATASET.NAME', dataset_info.NAME]
+    opts += ['TEST.DATASET.DATA_IM_DIR', dataset_info.DATA_IM_DIR]
+    opts += ['TEST.DATASET.DATA_ANN_FN', dataset_info.DATA_ANN_FN]
+    opts += ['TEST.DATASET.DATA_RAW_DIR', dataset_info.DATA_RAW_DIR]
+    opts += ['TEST.DATASET.DATA_DEVKIT_DIR', dataset_info.DATA_DEVKIT_DIR]
+    opts += ['TEST.DATASET.IM_PREFIX', dataset_info.IM_PREFIX]
     opts += ['TEST.WEIGHTS', weights_file]
     if proposal_file:
         opts += ['TEST.PROPOSAL_FILES', '("{}",)'.format(proposal_file)]
@@ -217,7 +219,7 @@ def multi_gpu_test_net_on_dataset(
 
 def test_net(
     weights_file,
-    dataset_name,
+    dataset_info,
     proposal_file,
     output_dir,
     ind_range=None,
@@ -230,7 +232,7 @@ def test_net(
         'Use rpn_generate to generate proposals from RPN-only models'
 
     roidb, dataset, start_ind, end_ind, total_num_images = get_roidb_and_dataset(
-        dataset_name, proposal_file, ind_range
+        dataset_info, proposal_file, ind_range
     )
     model = initialize_model_from_cfg(weights_file, gpu_id=gpu_id)
     num_images = len(roidb)
@@ -339,11 +341,11 @@ def initialize_model_from_cfg(weights_file, gpu_id=0):
     return model
 
 
-def get_roidb_and_dataset(dataset_name, proposal_file, ind_range):
+def get_roidb_and_dataset(dataset_info, proposal_file, ind_range):
     """Get the roidb for the dataset specified in the global cfg. Optionally
     restrict it to a range of indices if ind_range is a pair of integers.
     """
-    dataset = JsonDataset(dataset_name)
+    dataset = JsonDataset(dataset_info)
     if cfg.TEST.PRECOMPUTED_PROPOSALS:
         assert proposal_file, 'No proposal file given'
         roidb = dataset.get_roidb(
