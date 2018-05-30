@@ -231,13 +231,13 @@ __C.TEST.WEIGHTS = b''
 #__C.TEST.DATASETS = ()
 
 # The paths for testing dataset
-__C.TEST.DATASET = AttrDict()
-__C.TEST.NAME = b'test'
-__C.TEST.DATA_IM_DIR = b''
-__C.TEST.DATA_ANN_FN = b''
-__C.TEST.DATA_RAW_DIR = b''
-__C.TEST.DATA_DEVKIT_DIR = b''
-__C.TEST.IM_PREFIX = b''
+__C.TEST.DATASET_INFO = AttrDict()
+__C.TEST.DATASET_INFO.NAME = b'test'
+__C.TEST.DATASET_INFO.DATA_IM_DIR = b''
+__C.TEST.DATASET_INFO.DATA_ANN_FN = b''
+__C.TEST.DATASET_INFO.DATA_RAW_DIR = b''
+__C.TEST.DATASET_INFO.DATA_DEVKIT_DIR = b''
+__C.TEST.DATASET_INFO.IM_PREFIX = b''
 
 # Scale to use during testing
 __C.TEST.SCALE = 600
