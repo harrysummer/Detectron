@@ -20,7 +20,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from core.config import cfg
+from detectron.core.config import cfg
 from collections import deque
 from email.mime.text import MIMEText
 import json
