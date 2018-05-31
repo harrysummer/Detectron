@@ -1114,8 +1114,6 @@ def cache_cfg_urls():
 
 def get_output_dir(dataset_info, training=True):
     """Get the output directory determined by the current global config."""
-    assert isinstance(datasets, (tuple, list, basestring)), \
-        'datasets argument must be of type tuple, list or string'
     dataset_name = dataset_info.NAME
     tag = 'train' if training else 'test'
     # <output-dir>/<train|test>/<dataset-name>/<model-type>/
