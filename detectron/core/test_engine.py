@@ -63,16 +63,16 @@ def get_eval_functions():
     return parent_func, child_func
 
 
-def get_inference_dataset(index, is_parent=True):
-    dataset_info = cfg.TEST.DATASET
+def get_inference_dataset(is_parent=True):
+    dataset_info = cfg.TEST.DATASET_INFO
 
     if cfg.TEST.PRECOMPUTED_PROPOSALS:
         assert is_parent or len(cfg.TEST.PROPOSAL_FILES) == 1, \
             'The child inference process can only work on a single proposal file'
-        assert len(cfg.TEST.PROPOSAL_FILES) == len(cfg.TEST.DATASETS), \
+        assert len(cfg.TEST.PROPOSAL_FILES) == 1, \
             'If proposals are used, one proposal file must be specified for ' \
             'each dataset'
-        proposal_file = cfg.TEST.PROPOSAL_FILES[index]
+        proposal_file = cfg.TEST.PROPOSAL_FILES[0]
     else:
         proposal_file = None
 
@@ -94,24 +94,23 @@ def run_inference(
             # single process or (if multi_gpu_testing is True) using this process to
             # launch subprocesses that each run inference on a range of the dataset
             all_results = {}
-            for i in range(len(cfg.TEST.DATASETS)):
-                dataset_info, proposal_file = get_inference_dataset(i)
-                output_dir = get_output_dir(dataset_info, training=False)
-                results = parent_func(
-                    weights_file,
-                    dataset_info,
-                    proposal_file,
-                    output_dir,
-                    multi_gpu=multi_gpu_testing
-                )
-                all_results.update(results)
+            dataset_info, proposal_file = get_inference_dataset()
+            output_dir = get_output_dir(dataset_info, training=False)
+            results = parent_func(
+                weights_file,
+                dataset_info,
+                proposal_file,
+                output_dir,
+                multi_gpu=multi_gpu_testing
+            )
+            all_results.update(results)
 
             return all_results
         else:
             # Subprocess child case:
             # In this case test_net was called via subprocess.Popen to execute on a
             # range of inputs on a single dataset
-            dataset_info, proposal_file = get_inference_dataset(0, is_parent=False)
+            dataset_info, proposal_file = get_inference_dataset(is_parent=False)
             output_dir = get_output_dir(dataset_info, training=False)
             return child_func(
                 weights_file,
@@ -173,12 +172,12 @@ def multi_gpu_test_net_on_dataset(
     assert os.path.exists(binary), 'Binary \'{}\' not found'.format(binary)
 
     # Pass the target dataset and proposal file (if any) via the command line
-    opts = ['TEST.DATASET.NAME', dataset_info.NAME]
-    opts += ['TEST.DATASET.DATA_IM_DIR', dataset_info.DATA_IM_DIR]
-    opts += ['TEST.DATASET.DATA_ANN_FN', dataset_info.DATA_ANN_FN]
-    opts += ['TEST.DATASET.DATA_RAW_DIR', dataset_info.DATA_RAW_DIR]
-    opts += ['TEST.DATASET.DATA_DEVKIT_DIR', dataset_info.DATA_DEVKIT_DIR]
-    opts += ['TEST.DATASET.IM_PREFIX', dataset_info.IM_PREFIX]
+    opts = ['TEST.DATASET_INFO.NAME', dataset_info.NAME]
+    opts += ['TEST.DATASET_INFO.DATA_IM_DIR', dataset_info.DATA_IM_DIR]
+    opts += ['TEST.DATASET_INFO.DATA_ANN_FN', dataset_info.DATA_ANN_FN]
+    opts += ['TEST.DATASET_INFO.DATA_RAW_DIR', dataset_info.DATA_RAW_DIR]
+    opts += ['TEST.DATASET_INFO.DATA_DEVKIT_DIR', dataset_info.DATA_DEVKIT_DIR]
+    opts += ['TEST.DATASET_INFO.IM_PREFIX', dataset_info.IM_PREFIX]
     opts += ['TEST.WEIGHTS', weights_file]
     if proposal_file:
         opts += ['TEST.PROPOSAL_FILES', '("{}",)'.format(proposal_file)]
